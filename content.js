@@ -1,4 +1,4 @@
-const VERSION = "24.07.27";
+const VERSION = "1.5.240909";
 
 function logVersion() {
   console.log(`${VERSION} 버전이 실행되고 있습니다.`);
@@ -72,90 +72,190 @@ async function delay(ms) {
 // 링크드인 리쿠르트 라이트 데이터 파싱, 전후처리
 // ==================================================================== //
 
-/**
- * Parses a position period from LinkedIn.
- * @param {string} period - The period string in the format "MMM YYYY – MMM YYYY", "YYYY – YYYY", or "MMM YYYY – Present".
- * @returns {Object} The parsed period object with start and optionally end dates, or null if parsing fails.
- */
-function parsePositionPeriod(period) {
-  try {
-    const [startStr, endStr] = period.split(" – ");
-    let startDate, endDate;
-
-    // Handle cases where only the year is provided
-    if (startStr.length === 4) {
-      startDate = new Date(Date.parse(`Jan ${startStr} 1`));
-    } else {
-      startDate = new Date(Date.parse(`${startStr} 1`));
-    }
-
-    if (endStr === "Present") {
-      endDate = null;
-    } else if (endStr.length === 4) {
-      endDate = new Date(Date.parse(`Dec ${endStr} 1`));
-    } else {
-      endDate = new Date(Date.parse(`${endStr} 1`));
-    }
-
-    if (isNaN(startDate) || (endDate !== null && isNaN(endDate)))
-      throw new Error("Invalid date");
-
-    const periodObj = {
-      start: {
-        month: startDate.getMonth() + 1,
-        year: startDate.getFullYear(),
-      },
-    };
-
-    if (endDate) {
-      periodObj.end = {
-        month: endDate.getMonth() + 1,
-        year: endDate.getFullYear(),
-      };
-    }
-
-    return periodObj;
-  } catch (error) {
-    console.error("Error parsing period:", period, error);
-    return null;
-  }
+// 쿠키에서 특정 쿠키 값을 추출하는 함수
+function getCookieValue(name) {
+  let match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  if (match) return match[2];
+  return null;
 }
 
+const fetchProfile = async (profileUrn, csrfToken) => {
+  const res = await fetch(
+    `https://www.linkedin.com/talent/api/talentLinkedInMemberProfiles/urn%3Ali%3Ats_linkedin_member_profile%3A(${profileUrn}%2C1%2Curn%3Ali%3Ats_hiring_project%3A0)`,
+    {
+      method: "POST",
+      headers: {
+        Host: "www.linkedin.com",
+        Connection: "keep-alive",
+        "sec-ch-ua":
+          '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+        "sec-ch-ua-mobile": "?0",
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        Accept: "application/json",
+        "Csrf-Token": csrfToken,
+        "X-RestLi-Protocol-Version": "2.0.0",
+        "x-http-method-override": "GET",
+        "sec-ch-ua-platform": '"macOS"',
+        Origin: "https://www.linkedin.com",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        Referer: "https://www.linkedin.com/talent/search/profile",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Content-Type": "application/x-www-form-urlencoded",
+        Cookie: document.cookie,
+      },
+      body: "altkey=urn&decoration=%28entityUrn%2CcurrentResumePosition%2CreferenceUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CmemberPreferences%28availableStartingAt%2Clocations%2CgeoLocations*~%28standardGeoStyleName%29%2CopenToNewOpportunities%2Ctitles%2CinterestedCandidateIntroductionStatement%2Cindustries*~%2CcompanySizeRange%2CemploymentTypes%2Cbenefits%2Cschedules%2CsalaryLowerBounds%2Ccommute%2CjobSeekingUrgencyLevel%2CopenToWorkRemotely%2ClocalizedWorkplaceTypes%2CremoteGeoLocationUrns*~%28standardGeoStyleName%29%2CsegmentAttributeGroups*%28attributeUrn~%28localizedName%29%2CattributeValueUrns*~%28localizedName%29%29%29%2CfirstName%2ClastName%2Cheadline%2Clocation%2CprofilePicture%2CvectorProfilePicture%2CnumConnections%2Csummary%2CnetworkDistance%2CprofileSkills*%28name%2CtopSkill%2CtopVoiceBadge%2CskillAssessmentBadge%2CprofileResume%2CendorsementCount%2CprofileSkillAssociationsGroupUrn~%28entityUrn%2Cassociations*%28description%2Ctype%2CorganizationUrn~%28name%2Curl%2Clogo%29%29%29%2ChasInsight%29%2CpublicProfileUrl%2CcontactInfo%2Cwebsites*%2CcanSendInMail%2Cunlinked%2CunLinkedMigrated%2Chighlights%28connections%28connections*~%28entityUrn%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%2CtotalCount%29%2Ccompanies%28companies*%28company~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2CoverlapInfo%29%29%2Cschools%28schools*%28school~%28name%2Curl%2CvectorLogo%29%2CschoolOrganizationUrn~%28name%2Curl%2Clogo%29%2CoverlapInfo%29%29%29%2CfollowingEntities%28companies*~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2Cinfluencers*~%28entityUrn%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%2Cschools*~%28name%2Curl%2CvectorLogo%29%2CschoolOrganizationsUrns*~%28name%2Curl%2Clogo%29%29%2Ceducations*%28school~%28name%2Curl%2CvectorLogo%29%2CorganizationUrn~%28name%2Curl%2Clogo%29%2CschoolName%2Cgrade%2Cdescription%2CdegreeName%2CfieldOfStudy%2CstartDateOn%2CendDateOn%29%2CgroupedWorkExperience*%28companyUrn~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2Cpositions*%28profileResume%2Ctitle%2CstartDateOn%2CendDateOn%2Cdescription%2Clocation%2CemploymentStatus%2CorganizationUrn%2CcompanyName%2CassociatedProfileSkillNames%2CcompanyUrn~%28url%2CvectorLogo%29%29%2CstartDateOn%2CendDateOn%29%2CvolunteeringExperiences*%28company~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2CcompanyName%2Crole%2CstartDateOn%2CendDateOn%2Cdescription%29%2Crecommendations*%28recommender~%28entityUrn%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%2CrecommendationText%2Crelationship%2Ccreated%29%2Caccomplishments%28projects*%28title%2Cdescription%2Curl%2CstartDateOn%2CendDateOn%2CsingleDate%2Ccontributors*%28name%2ClinkedInMember~%28entityUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%29%29%2Ccourses*%2Clanguages*%2Cpublications*%28name%2Cpublisher%2Cdescription%2Curl%2CdateOn%2Cauthors*%28name%2ClinkedInMember~%28entityUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%29%29%2Cpatents*%28number%2CapplicationNumber%2Ctitle%2Cissuer%2Cpending%2Curl%2CfilingDateOn%2CissueDateOn%2Cdescription%2Cinventors*%28name%2ClinkedInMember~%28entityUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%29%29%2CtestScores*%2Chonors*%2Ccertifications*%28name%2ClicenseNumber%2Cauthority%2Ccompany~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2Curl%2CstartDateOn%2CendDateOn%29%29%2CprivacySettings%28allowConnectionsBrowse%2CshowPremiumSubscriberIcon%29%2ClegacyCapAuthToken%2CfullProfileNotVisible%2CcurrentPositions*%28company~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2CcompanyName%2Ctitle%2CstartDateOn%2CendDateOn%2Cdescription%2Clocation%29%2CindustryName%2ChasProfileVerifications%29",
+    }
+  );
+
+  if (res.ok) {
+    return await res.json();
+  }
+};
+
+const fetchProfileCompanies = async (profileUrn, csrfToken) => {
+  const res = await fetch(
+    `https://www.linkedin.com/talent/api/talentLinkedInMemberProfiles/urn%3Ali%3Ats_linkedin_member_profile%3A(${profileUrn}%2C1%2Curn%3Ali%3Ats_hiring_project%3A0)?altkey=urn&decoration=%28entityUrn%2CreferenceUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CfirstName%2ClastName%2Cheadline%2Clocation%2CpublicProfileUrl%2CcurrentPositions*%28companyName%2Ctitle%29%29`,
+    {
+      method: "POST",
+      headers: {
+        Host: "www.linkedin.com",
+        Connection: "keep-alive",
+        "sec-ch-ua":
+          '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+        "sec-ch-ua-mobile": "?0",
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        Accept: "application/json",
+        "Csrf-Token": csrfToken,
+        "X-RestLi-Protocol-Version": "2.0.0",
+        "x-http-method-override": "GET",
+        "sec-ch-ua-platform": '"macOS"',
+        Origin: "https://www.linkedin.com",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        Referer: "https://www.linkedin.com/talent/search/profile",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Content-Type": "application/x-www-form-urlencoded",
+        Cookie: document.cookie,
+      },
+    }
+  );
+
+  if (res.ok) {
+    return await res.json();
+  }
+};
+
+const parsingLinkedinLogo = (data) => {
+  // static file pattern 이 2 depth 이상이라 분리
+  // 프로필 사진, 회사 사진 등에 활용
+  const rootUrl = data?.rootUrl ?? "";
+  const artifacts = data?.artifacts;
+  const fileSegment =
+    artifacts?.length > 0
+      ? artifacts[artifacts.length - 1]?.fileIdentifyingUrlPathSegment ?? ""
+      : "";
+  const photoUrl = rootUrl + fileSegment;
+  return photoUrl;
+};
+
 /**
- * Merges overlapping periods.
+ * Merges overlapping periods and calculates the total duration.
  * @param {Array<Object>} periods - The array of period objects.
  * @returns {Array<Object>} The merged array of period objects.
  */
 function mergePeriods(periods) {
-  // Filter out invalid periods
+  if (!periods || periods.length === 0) {
+    return []; // 빈 배열 처리
+  }
+
+  // 유효한 기간만 필터링 (start가 있는 기간만)
   periods = periods.filter((period) => period !== null && period.start);
+
+  if (periods.length === 0) {
+    return []; // 필터링 후 남은 기간이 없으면 빈 배열 반환
+  }
+
+  // 시작 날짜 기준으로 정렬
   periods.sort(
     (a, b) =>
-      new Date(a.start.year, a.start.month - 1) -
-      new Date(b.start.year, b.start.month - 1)
+      new Date(a.start.year, a.start.month ? a.start.month - 1 : 0) -
+      new Date(b.start.year, b.start.month ? b.start.month - 1 : 0)
   );
 
   const merged = [];
-  let current = periods[0];
+  let current = { ...periods[0] }; // 첫 번째 기간을 현재로 설정
+
+  // 시작 month가 없을 경우 1월로 설정
+  if (!current.start.month) {
+    current.start.month = 1;
+  }
 
   for (let i = 1; i < periods.length; i++) {
     const period = periods[i];
-    const currentEndDate = current.end
-      ? new Date(current.end.year, current.end.month - 1)
-      : new Date();
-    const periodStartDate = new Date(period.start.year, period.start.month - 1);
+
+    // start에 month 값이 없으면 1월로 설정
+    if (!period.start.month) {
+      period.start.month = 1;
+    }
+
+    // current의 end가 없으면 다음 period의 start로 end를 설정
+    if (!current.end) {
+      current.end = {
+        year: period.start.year,
+        month: period.start.month || 1, // 월이 없으면 1월로 설정
+      };
+    }
+
+    const currentEndDate = new Date(
+      current.end.year,
+      current.end.month ? current.end.month - 1 : 11
+    ); // 끝나는 월이 없으면 12월로 설정
+    const periodStartDate = new Date(
+      period.start.year,
+      period.start.month ? period.start.month - 1 : 0
+    ); // 시작 월이 없으면 1월로 설정
 
     if (currentEndDate >= periodStartDate) {
       const periodEndDate = period.end
-        ? new Date(period.end.year, period.end.month - 1)
-        : new Date();
-      if (currentEndDate < periodEndDate) {
-        current.end = period.end;
+        ? new Date(
+            period.end.year,
+            period.end.month ? period.end.month - 1 : 11
+          ) // 끝나는 월이 없으면 12월로 설정
+        : null;
+
+      // 현재 끝나는 날짜보다 더 긴 기간이 있으면 끝나는 날짜 업데이트
+      if (!periodEndDate || currentEndDate < periodEndDate) {
+        current.end = period.end
+          ? { ...period.end }
+          : { year: period.start.year, month: period.start.month || 12 }; // 끝나는 날짜 또는 기본값 적용
       }
     } else {
+      // end의 month가 없으면 12월로 설정
+      if (!current.end.month) {
+        current.end.month = 12;
+      }
       merged.push(current);
-      current = period;
+      current = { ...period };
+      // 시작 month가 없을 경우 1월로 설정
+      if (!current.start.month) {
+        current.start.month = 1;
+      }
     }
+  }
+
+  // 마지막 기간 처리 (end가 없을 경우)
+  if (!current.end) {
+    current.end = {
+      year: new Date().getFullYear(),
+      month: new Date().getMonth() + 1,
+    };
+  } else if (!current.end.month) {
+    current.end.month = 12; // 마지막 기간의 end month가 없으면 12월로 설정
   }
 
   merged.push(current);
@@ -188,226 +288,113 @@ function calculateTotalDuration(periods) {
 }
 
 /**
- * Navigates to the next page by clicking the active pagination link.
- * @returns {Promise<void>} A promise that resolves when the navigation action is performed.
- */
-async function navigateToNextPage() {
-  const paginationLinks = document.querySelectorAll(
-    ".skyline-pagination-link--active"
-  );
-  if (paginationLinks.length > 0) {
-    paginationLinks[paginationLinks.length - 1].click();
-  }
-}
-
-/**
- * Parses data from the current LinkedIn profile page.
+ * Parses data from the target LinkedIn profile api response data
+ * @param {string} data - A data from linkedin recruite - lite api
  * @returns {Promise<Object>} A promise that resolves to an object containing the parsed data.
  */
-async function dataParsing() {
-  // 클릭해야 하는 것들 미리 클릭하기
-  document.querySelector("#line-clamp-show-more-button")?.click(); // 서머리
-  await delay(500);
-
-  const skillButton = document.querySelectorAll(
-    "button[aria-label][data-test-expandable-button]"
-  )[1];
-  skillButton?.click(); // skills
-  await delay(500);
-
-  const positionButton = document.querySelector(
-    'button[aria-label="Show more positions"][data-test-expandable-button]'
-  );
-  positionButton?.click(); // positions
-  await delay(500);
-
+async function linkedinFormattedData(data) {
   // 헤드라인
-  const headlineElement = document.querySelector(
-    "span[data-test-row-lockup-headline]"
-  );
-  const headline = headlineElement ? headlineElement.innerText : null;
+  const headline = data?.headline || "";
 
   // 서머리
-  const summaryElement = document.querySelector(
-    "section[data-test-profile-summary-card] span.lt-line-clamp__raw-line"
-  );
-  const summary = summaryElement ? summaryElement.innerText : null;
+  const summary = data?.summary || "";
 
   // 이름
-  const fullNameElement = document.querySelector(
-    "div.artdeco-entity-lockup__title"
-  );
-  const fullName = fullNameElement
-    ? fullNameElement.innerText.split(" ")
-    : ["", ""];
-  const firstName = fullName[0];
-  const lastName = fullName[1];
+  const firstName = data?.firstName || "";
+  const lastName = data?.lastName || "";
 
-  // 프로필
-  const photoUrlElement = document.querySelector(
-    "span.lockup__image-container > img"
-  );
-  const photoUrl = photoUrlElement ? photoUrlElement.src : null;
+  // 링크드인 프로필 url
+  const linkedinUrl = data.publicProfileUrl || "";
+  if (!linkedinUrl)
+    throw new Error("LinkedIn URL 값은 필수입니다. 없으면 skip 합니다.");
 
-  // 섹션 노드 필터링
-  const filteredNodes = Array.from(
-    document.querySelectorAll("div.expandable-list.expandable-stepper")
-  ).filter((node) => node.classList.length > 2);
-
-  // 회사
-  const positionsNode = Array.from(filteredNodes).find((node) =>
-    node.querySelector("h2[data-test-expandable-list-title]")
-  );
-  let positions = [];
-  if (positionsNode) {
-    positionsNode.querySelectorAll("li").forEach((li) => {
-      // ======================================================= //
-      // 아래는 하나의 회사에서 여러 색션으로 나눠서 입력한 것임
-      // 이 경우 그냥 한 회사를 여러개 회사 처럼 처리하는게 가장 빠를 수 있음
-      // div[data-test-position-list] 하위 div 로 다 묶여 있음 (아래로)
-      // ======================================================= //
-      const companySections = li.querySelectorAll(
-        "div.grouped-position-entity__right-content"
-      );
-
-      if (companySections.length >= 1) {
-        const companyName = li
-          .querySelector("strong.grouped-position-entity__company-name")
-          ?.innerText.trim();
-        const companyLogo = li
-          .querySelector("img.logo-container__img")
-          .getAttribute("src")
-          ?.trim();
-
-        companySections.forEach((div) => {
-          const startEndDate = div
-            .querySelector("span[data-test-grouped-position-entity-date-range]")
-            ?.innerText.trim();
-          const tempObj = {
-            companyName: companyName,
-            title: div
-              .querySelector("dd[data-test-grouped-position-entity-title]")
-              ?.innerText.trim(),
-            companyLocation: div
-              .querySelector("dd[data-test-grouped-position-entity-location]")
-              ?.innerText.trim(),
-            description: div
-              .querySelector(
-                "dd[data-test-grouped-position-entity-description]"
-              )
-              ?.innerText.trim(),
-            startEndDate: startEndDate
-              ? parsePositionPeriod(startEndDate)
-              : startEndDate,
-            companyLogo: companyLogo,
-          };
-          positions.push(tempObj);
-        });
-      }
-      // ======================================================= //
-      // 하나의 회사에 하나의 정보만 넣은 경우
-      // ======================================================= //
-      else {
-        const startEndDate = li
-          .querySelector("span.background-entity__date-range")
-          ?.innerText.trim();
-
-        let companyName = li
-          .querySelector("a.position-item__company-link")
-          ?.innerText.trim();
-
-        // official company 가 아닌 경우, 위 값이 없어서 아래로 후처리 필요
-        companyName = companyName
-          ? companyName
-          : li
-              .querySelector(
-                "dd.background-entity__summary-definition--subtitle"
-              )
-              ?.innerText.split("·")[0]
-              .trim();
-
-        const tempObj = {
-          companyName: companyName,
-          title: li
-            .querySelector("a.position-item__position-title-link")
-            ?.innerText.trim(),
-          companyLocation: li
-            .querySelector("dd.background-entity__summary-definition--location")
-            ?.innerText.trim(),
-          startEndDate: startEndDate
-            ? parsePositionPeriod(startEndDate)
-            : startEndDate,
-          description: li
-            .querySelector(
-              "dd.background-entity__summary-definition--description"
-            )
-            ?.innerText.trim(),
-          companyLogo: li
-            .querySelector("img.logo-container__img")
-            .getAttribute("src")
-            ?.trim(),
-        };
-        positions.push(tempObj);
-      }
-    });
-  }
+  // 프로필 사진
+  const photoUrl = parsingLinkedinLogo(data?.vectorProfilePicture);
 
   // 학력
-  const educationsNode = Array.from(filteredNodes).find((node) =>
-    node.hasAttribute("data-test-education-card")
-  );
+  const educationsNode = data.educations || [];
   let educations = [];
-  if (educationsNode) {
-    educationsNode.querySelectorAll("li").forEach((li) => {
-      const tempObj = {
-        degreeName: li
-          .querySelector("span[data-test-education-entity-degree-name]")
-          ?.innerText.trim(),
-        fieldOfStudy: li
-          .querySelector("span[data-test-education-entity-field-of-study]")
-          ?.innerText.trim(),
-        schoolName: li
-          .querySelector("h3.background-entity__summary-definition--title")
-          ?.innerText.trim(),
-        startEndDate: li
-          .querySelector(
-            "dd.background-entity__summary-definition--date-duration"
-          )
-          ?.innerText.trim(),
-      };
-      educations.push(tempObj);
-    });
-  }
+  educationsNode.forEach((edu) => {
+    const startYear = edu.startDateOn?.year ?? "";
+    const endYear = edu.endDateOn?.year ?? "";
+
+    const tempObj = {
+      degreeName: edu.degreeName || "",
+      fieldOfStudy: edu.fieldOfStudy || "",
+      schoolName: edu.schoolName || "",
+      startEndDate: `${startYear} - ${endYear}`,
+
+      // 아래는 1.5 version 이후 신규 추가된 항목
+      description: edu.description || "",
+      grade: edu.grade || "",
+      originStartEndDate: {
+        startDateOn: edu.startDateOn,
+        endDateOn: edu.endDateOn,
+      },
+    };
+    educations.push(tempObj);
+  });
 
   // 스킬
-  const skillsNode = Array.from(filteredNodes).find((node) =>
-    node.hasAttribute("data-live-test-profile-skills-card")
-  );
+  const skillsNode = data.profileSkills || [];
   let skills = [];
-  if (skillsNode) {
-    skillsNode.querySelectorAll("li").forEach((li) => {
-      const skillElement = li.querySelector("dt");
-      if (skillElement) skills.push(skillElement.innerText);
-    });
-  }
+  skillsNode.forEach((skillSet) => {
+    const skillName = skillSet.name || "";
+    if (skillName) skills.push(skillName);
+  });
 
-  // 링크드인 프로필
-  const linkedinUrlElement = document.querySelector(
-    "span[data-test-personal-info-profile-link-text]"
-  );
-  const linkedinUrl = linkedinUrlElement ? linkedinUrlElement.innerText : null;
+  // 회사
+  const positionsNode = data.groupedWorkExperience || [];
+  let positions = [];
+  positionsNode.forEach((position) => {
+    const positionDetail = position.positions || [];
+    positionDetail.forEach((pos) => {
+      const tempObj = {
+        companyName: pos.companyName || "",
+        title: pos.title || "",
+        companyLocation: pos.location?.displayName || "",
+        description: pos?.description || "",
+        companyLogo: parsingLinkedinLogo(
+          pos?.companyUrnResolutionResult?.vectorLogo
+        ),
+        startEndDate: {
+          start: pos.startDateOn,
+        },
+      };
+
+      // 끝나는 날 있으면 추가
+      if (pos?.endDateOn) tempObj.startEndDate.end = pos.endDateOn;
+      positions.push(tempObj);
+    });
+  });
 
   // 그 외 웹사이트
-  const websiteNodes = document.querySelectorAll(
-    "a.personal-info__link--website"
-  );
-  const website = Array.from(websiteNodes).map((node) => node.innerText);
+  const websiteNodes = data.websites || [];
+  const website = websiteNodes.map((web) => {
+    return `${web.url} - ${web.category}`;
+  });
 
   // 총 근무 기간 계산
   const mergedPositions = mergePeriods(
     positions.map((pos) => pos.startEndDate)
   );
-  const totalDuration = calculateTotalDuration(mergedPositions);
+  const totalDuration =
+    mergedPositions.length > 0 ? calculateTotalDuration(mergedPositions) : null;
+
+  // 신규 추가된 값
+  const industryName = data.industryName || "";
+  const highlights = data.highlights || [];
+  const projects = data.projects || [];
+
+  // recommendations
+  const recommendationNodes = data.recommendations || [];
+  const recommendations = recommendationNodes.map((reco) => {
+    const referee = reco?.recommenderResolutionResult?.publicProfileUrl || "";
+    return {
+      referee,
+      recommendationText: reco.recommendationText,
+    };
+  });
 
   return {
     headline,
@@ -421,6 +408,11 @@ async function dataParsing() {
     totalDuration,
     linkedinUrl,
     website,
+    // 1.5 version 이후 신규 추가
+    industryName,
+    // highlights,
+    projects,
+    recommendations,
   };
 }
 
@@ -490,7 +482,7 @@ function goToPage(pageNumber) {
  * @param {Object} data - The raw data from the API.
  * @returns {Object} The formatted profile data.
  */
-function formattedData(profileId, data) {
+function rememberFormattedData(profileId, data) {
   const profileData = data.data;
   const nameParts = profileData.name.split("OO");
 
@@ -525,7 +517,8 @@ function formattedData(profileId, data) {
   // 총 연차 계산하기
   const careerPeriods = convertCareerPeriods(profileData.careers);
   const mergedPeriods = mergePeriods(careerPeriods);
-  const totalDuration = calculateTotalDuration(mergedPeriods);
+  const totalDuration =
+    mergedPeriods.length > 0 ? calculateTotalDuration(mergedPeriods) : null;
 
   return {
     headline: profileData.main_career.position,
@@ -601,41 +594,58 @@ async function fetchRememberApi(token, ua, profileId) {
  * @param {number} scrapingCount - The number of profiles to scrape.
  * @param {number} sleepCount - The delay between scrapes in milliseconds.
  */
-function scrapeLinkedInData(scrapingCount, sleepCount) {
-  let cnt = 1;
-  let errCnt = 0;
-  const users = [];
+function scrapeLinkedInData(scrapingPageCount, sleepCount) {
+  const csrfToken = getCookieValue("JSESSIONID").replaceAll('"', "");
 
+  let cnt = 1;
+  const users = [];
   async function scrapePage() {
     try {
-      // 에러 카운트가 올라가면 같은 페이지,
-      if (errCnt >= 2) {
-        await navigateToNextPage();
-        errCnt = 0;
-      } else {
-        const nameElement = document.querySelector(
-          "span[data-test-row-lockup-full-name]"
-        );
-        if (nameElement && nameElement.innerText !== "LinkedIn Member") {
-          const userInfo = await dataParsing();
-          if (userInfo) users.push(userInfo);
-        }
-        await navigateToNextPage();
-        errCnt = 0;
+      // CSR 때문에 일단 가장 하단 화면으로
+      while (window.scrollY + window.innerHeight < document.body.scrollHeight) {
+        window.scrollTo({
+          top: window.scrollY + document.body.scrollHeight - 100,
+          behavior: "smooth",
+        });
+        await delay(800);
+      }
+
+      // 타겟 profile urn 값들 가져오기
+      const profileUrnTags = document.querySelectorAll(
+        "a[data-test-link-to-profile-link]"
+      );
+
+      // api 호출
+      for (let i = 0; i < profileUrnTags.length; i++) {
+        const profileUrn = profileUrnTags[i]
+          .getAttribute("href")
+          .split("?")[0]
+          .split("profile/")[1];
+        const result = await fetchProfile(profileUrn, csrfToken);
+        console.log(`${cnt} 번째 페이지, ${i} 번째 데이터 수집 완료`);
+
+        // 데이터 파싱 필요
+        const userInfo = await linkedinFormattedData(result);
+        users.push(userInfo);
       }
     } catch (error) {
-      errCnt++;
       console.error("Error occurred:", error);
     } finally {
-      await delay(sleepCount);
+      // 다음 페이지로
+      document
+        .querySelector(
+          "a.mini-pagination__quick-link.link-without-hover-visited"
+        )
+        .click();
       console.log(
-        `${cnt} 번째 데이터 수집 완료 (${scrapingCount} 개 남음) ... ${sleepCount}ms 동안 sleep ...`
+        `${cnt} 번째 페이지 데이터 수집 완료 ... ${sleepCount}ms 동안 sleep ...`
       );
+      await delay(sleepCount);
     }
 
     cnt++;
-    scrapingCount--;
-    if (scrapingCount > 0) {
+    scrapingPageCount--;
+    if (scrapingPageCount > 0) {
       await scrapePage();
     } else {
       const filteredUsers = users.filter((user) => user.linkedinUrl);
@@ -645,7 +655,6 @@ function scrapeLinkedInData(scrapingCount, sleepCount) {
       downloadJSON(json, fileName);
     }
   }
-
   scrapePage();
 }
 
@@ -676,7 +685,7 @@ async function scrapeRememberData(token, ua, scrapingCount) {
     try {
       const data = await fetchRememberApi(token, ua, profileId);
       if (data) {
-        const userInfo = formattedData(profileId, data);
+        const userInfo = rememberFormattedData(profileId, data);
         users.push(userInfo);
       }
     } catch (error) {

@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "SearcHRight Extensions",
-    "version": "1.1.240727",
+    "version": "1.5.240909",
     "description": "SearcHRight Extensions - Scrape LinkedIn, Remember data and save it as a JSON file.",
     "permissions": [
         "activeTab",
