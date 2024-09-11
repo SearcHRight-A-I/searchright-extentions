@@ -13,6 +13,20 @@ function sendMessage(action, data) {
   });
 }
 
+document
+  .getElementById("linkedinTargetStartButton")
+  .addEventListener("click", () => {
+    const userUrn = document.getElementById("userUrn").value.trim();
+    if (userUrn) {
+      alert(
+        "데이터 수집을 시작합니다! 해당 프로세스는 러닝하고 다른 업무를 할 수 있습니다."
+      );
+      sendMessage("startLinkedinTargetScraping", { userUrn });
+    } else {
+      alert("Please enter valid userUrn fields.");
+    }
+  });
+
 document.getElementById("linkedinStartButton").addEventListener("click", () => {
   const count = Number(document.getElementById("pageCount").value);
   const sleep = Number(document.getElementById("sleepCount").value);
@@ -53,7 +67,7 @@ document
 
 document.getElementById("howtoButton").addEventListener("click", () => {
   window.open(
-    "https://www.notion.so/nuung/How-To-Use-SearcHRight-Chrome-Extention-2d4b36bd4b174b9b8f868f394ade9d93?pvs=4",
+    "https://www.notion.so/searchright/How-To-Use-SearcHRight-Chrome-Extensions-26572506982e4a49b36b7839ff0b4b7a?pvs=4",
     "_blank"
   );
 });

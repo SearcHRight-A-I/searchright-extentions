@@ -590,6 +590,28 @@ async function fetchRememberApi(token, ua, profileId) {
 // ==================================================================== //
 
 /**
+ * Starts the LinkedIn scraping process for one profile.
+ * @param {string} userUrn - The unique value of target profile to scrape.
+ */
+function scrapeTargetLinkedInData(userUrn) {
+  const csrfToken = getCookieValue("JSESSIONID").replaceAll('"', "");
+  const users = [];
+  async function scrapePage() {
+    const result = await fetchProfile(userUrn, csrfToken);
+    const userInfo = await linkedinFormattedData(result);
+    users.push(userInfo);
+
+    // json 형태 포메팅하기
+    const filteredUsers = users.filter((user) => user.linkedinUrl);
+    const json = arrayToJSON(filteredUsers);
+    const formattedDate = getFormattedDate();
+    const fileName = `[${formattedDate}]${userInfo.lastName}${userInfo.firstName}.json`;
+    downloadJSON(json, fileName);
+  }
+  scrapePage();
+}
+
+/**
  * Starts the LinkedIn scraping process.
  * @param {number} scrapingCount - The number of profiles to scrape.
  * @param {number} sleepCount - The delay between scrapes in milliseconds.
@@ -632,11 +654,10 @@ function scrapeLinkedInData(scrapingPageCount, sleepCount) {
       console.error("Error occurred:", error);
     } finally {
       // 다음 페이지로
-      document
-        .querySelector(
-          "a.mini-pagination__quick-link.link-without-hover-visited"
-        )
-        .click();
+      const nextPageBtn = document.querySelector(
+        "a.mini-pagination__quick-link.link-without-hover-visited"
+      );
+      if (nextPageBtn) nextPageBtn.click();
       console.log(
         `${cnt} 번째 페이지 데이터 수집 완료 ... ${sleepCount}ms 동안 sleep ...`
       );
@@ -775,6 +796,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "startLinkedinScraping") {
     logVersion();
     scrapeLinkedInData(message.count, message.sleep);
+  } else if (message.action === "startLinkedinTargetScraping") {
+    logVersion();
+    scrapeTargetLinkedInData(message.userUrn);
   } else if (message.action === "startRememberScraping") {
     logVersion();
     scrapeRememberData(

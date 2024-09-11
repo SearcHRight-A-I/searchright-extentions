@@ -13,6 +13,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       }
     );
+  } else if (request.action === "startLinkedinTargetScraping") {
+    chrome.scripting.executeScript(
+      {
+        target: { tabId: sender.tab.id },
+        files: ["content.js"],
+      },
+      () => {
+        chrome.tabs.sendMessage(sender.tab.id, {
+          action: "startLinkedinTargetScraping",
+          userUrn: request.userUrn,
+        });
+      }
+    );
   } else if (request.action === "startRememberScraping") {
     chrome.scripting.executeScript(
       {
