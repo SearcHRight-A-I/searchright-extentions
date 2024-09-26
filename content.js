@@ -1,4 +1,4 @@
-const VERSION = "1.5.240911";
+const VERSION = "1.5.240919";
 
 function logVersion() {
   console.log(`${VERSION} 버전이 실행되고 있습니다.`);
@@ -654,9 +654,10 @@ function scrapeLinkedInData(scrapingPageCount, sleepCount) {
       console.error("Error occurred:", error);
     } finally {
       // 다음 페이지로
-      const nextPageBtn = document.querySelector(
-        "a.mini-pagination__quick-link.link-without-hover-visited"
+      const pageBtns = document.querySelectorAll(
+        "a.mini-pagination__quick-link"
       );
+      const nextPageBtn = pageBtns[pageBtns.length - 1];
       if (nextPageBtn) nextPageBtn.click();
       console.log(
         `${cnt} 번째 페이지 데이터 수집 완료 ... ${sleepCount}ms 동안 sleep ...`
