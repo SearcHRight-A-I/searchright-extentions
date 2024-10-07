@@ -1,4 +1,4 @@
-const VERSION = "1.5.240919";
+const VERSION = "1.5.241007";
 
 function logVersion() {
   console.log(`${VERSION} 버전이 실행되고 있습니다.`);
@@ -105,6 +105,13 @@ const fetchProfile = async (profileUrn, csrfToken) => {
         "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
         "Content-Type": "application/x-www-form-urlencoded",
         Cookie: document.cookie,
+        "x-li-lang": "ko_KR",
+        "x-li-pem-metadata":
+          "Hiring Platform - Profile=slide-in-global-profile-view",
+        "x-li-page-instance":
+          "urn:li:page:d_talent_profile_slidein_profile_tab;",
+        "x-li-track":
+          '{"clientVersion":"1.6.7483","mpVersion":"1.6.7483","osName":"web","timezoneOffset":9,"timezone":"Asia/Seoul","mpName":"talent-solutions-web","displayDensity":2,"displayWidth":3456,"displayHeight":2234}',
       },
       body: "altkey=urn&decoration=%28entityUrn%2CcurrentResumePosition%2CreferenceUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CmemberPreferences%28availableStartingAt%2Clocations%2CgeoLocations*~%28standardGeoStyleName%29%2CopenToNewOpportunities%2Ctitles%2CinterestedCandidateIntroductionStatement%2Cindustries*~%2CcompanySizeRange%2CemploymentTypes%2Cbenefits%2Cschedules%2CsalaryLowerBounds%2Ccommute%2CjobSeekingUrgencyLevel%2CopenToWorkRemotely%2ClocalizedWorkplaceTypes%2CremoteGeoLocationUrns*~%28standardGeoStyleName%29%2CsegmentAttributeGroups*%28attributeUrn~%28localizedName%29%2CattributeValueUrns*~%28localizedName%29%29%29%2CfirstName%2ClastName%2Cheadline%2Clocation%2CprofilePicture%2CvectorProfilePicture%2CnumConnections%2Csummary%2CnetworkDistance%2CprofileSkills*%28name%2CtopSkill%2CtopVoiceBadge%2CskillAssessmentBadge%2CprofileResume%2CendorsementCount%2CprofileSkillAssociationsGroupUrn~%28entityUrn%2Cassociations*%28description%2Ctype%2CorganizationUrn~%28name%2Curl%2Clogo%29%29%29%2ChasInsight%29%2CpublicProfileUrl%2CcontactInfo%2Cwebsites*%2CcanSendInMail%2Cunlinked%2CunLinkedMigrated%2Chighlights%28connections%28connections*~%28entityUrn%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%2CtotalCount%29%2Ccompanies%28companies*%28company~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2CoverlapInfo%29%29%2Cschools%28schools*%28school~%28name%2Curl%2CvectorLogo%29%2CschoolOrganizationUrn~%28name%2Curl%2Clogo%29%2CoverlapInfo%29%29%29%2CfollowingEntities%28companies*~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2Cinfluencers*~%28entityUrn%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%2Cschools*~%28name%2Curl%2CvectorLogo%29%2CschoolOrganizationsUrns*~%28name%2Curl%2Clogo%29%29%2Ceducations*%28school~%28name%2Curl%2CvectorLogo%29%2CorganizationUrn~%28name%2Curl%2Clogo%29%2CschoolName%2Cgrade%2Cdescription%2CdegreeName%2CfieldOfStudy%2CstartDateOn%2CendDateOn%29%2CgroupedWorkExperience*%28companyUrn~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2Cpositions*%28profileResume%2Ctitle%2CstartDateOn%2CendDateOn%2Cdescription%2Clocation%2CemploymentStatus%2CorganizationUrn%2CcompanyName%2CassociatedProfileSkillNames%2CcompanyUrn~%28url%2CvectorLogo%29%29%2CstartDateOn%2CendDateOn%29%2CvolunteeringExperiences*%28company~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2CcompanyName%2Crole%2CstartDateOn%2CendDateOn%2Cdescription%29%2Crecommendations*%28recommender~%28entityUrn%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%2CrecommendationText%2Crelationship%2Ccreated%29%2Caccomplishments%28projects*%28title%2Cdescription%2Curl%2CstartDateOn%2CendDateOn%2CsingleDate%2Ccontributors*%28name%2ClinkedInMember~%28entityUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%29%29%2Ccourses*%2Clanguages*%2Cpublications*%28name%2Cpublisher%2Cdescription%2Curl%2CdateOn%2Cauthors*%28name%2ClinkedInMember~%28entityUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%29%29%2Cpatents*%28number%2CapplicationNumber%2Ctitle%2Cissuer%2Cpending%2Curl%2CfilingDateOn%2CissueDateOn%2Cdescription%2Cinventors*%28name%2ClinkedInMember~%28entityUrn%2Canonymized%2CunobfuscatedFirstName%2CunobfuscatedLastName%2CfirstName%2ClastName%2Cheadline%2CprofilePicture%2CvectorProfilePicture%2CpublicProfileUrl%2CfollowerCount%2CnetworkDistance%2CautomatedActionProfile%29%29%29%2CtestScores*%2Chonors*%2Ccertifications*%28name%2ClicenseNumber%2Cauthority%2Ccompany~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2Curl%2CstartDateOn%2CendDateOn%29%29%2CprivacySettings%28allowConnectionsBrowse%2CshowPremiumSubscriberIcon%29%2ClegacyCapAuthToken%2CfullProfileNotVisible%2CcurrentPositions*%28company~%28followerCount%2Cname%2Curl%2CvectorLogo%29%2CcompanyName%2Ctitle%2CstartDateOn%2CendDateOn%2Cdescription%2Clocation%29%2CindustryName%2ChasProfileVerifications%29",
     }
@@ -383,8 +390,8 @@ async function linkedinFormattedData(data) {
 
   // 신규 추가된 값
   const industryName = data.industryName || "";
-  const highlights = data.highlights || [];
-  const projects = data.projects || [];
+  const projects =
+    (data.accomplishments && data.accomplishments.projects) || [];
 
   // recommendations
   const recommendationNodes = data.recommendations || [];
@@ -643,12 +650,17 @@ function scrapeLinkedInData(scrapingPageCount, sleepCount) {
           .getAttribute("href")
           .split("?")[0]
           .split("profile/")[1];
-        const result = await fetchProfile(profileUrn, csrfToken);
-        console.log(`${cnt} 번째 페이지, ${i} 번째 데이터 수집 완료`);
 
-        // 데이터 파싱 필요
-        const userInfo = await linkedinFormattedData(result);
-        users.push(userInfo);
+        try {
+          const result = await fetchProfile(profileUrn, csrfToken);
+          console.log(`${cnt} 번째 페이지, ${i} 번째 데이터 수집 완료`);
+          // 데이터 파싱 필요
+          const userInfo = await linkedinFormattedData(result);
+          users.push(userInfo);
+        } catch (error) {
+          console.error("fetchProfile Error occurred:", error);
+          continue;
+        }
       }
     } catch (error) {
       console.error("Error occurred:", error);
