@@ -4,10 +4,9 @@
   "main": "content.js",
   "author": "Nuung <hwjeong@searchright.net>",
   "license": "MIT",
-  "type": "module",
   "scripts": {
     "test": "node ./tests/test_mergePeriods_spec.js",
-    "build": "zip -r searchright-extensions.zip background.js content.js manifest.json popup.html popup.js"
+    "build": "zip -r searchright-extensions-deploy.zip background.js content.js manifest.json popup.html popup.js icons"
   },
   "dependencies": {
     "dotenv": "^16.4.5"

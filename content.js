@@ -175,7 +175,7 @@ const parsingLinkedinLogo = (data) => {
  * @param {Array<Object>} periods - The array of period objects.
  * @returns {Array<Object>} The merged array of period objects.
  */
-export function mergePeriods(periods) {
+function mergePeriods(periods) {
   if (!periods || periods.length === 0) {
     return []; // 빈 배열 처리
   }
@@ -274,7 +274,7 @@ export function mergePeriods(periods) {
  * @param {Array<Object>} periods - The array of period objects.
  * @returns {Object} The total duration in years and months.
  */
-export function calculateTotalDuration(periods) {
+function calculateTotalDuration(periods) {
   let totalMonths = 0;
 
   periods.forEach((period) => {
@@ -827,3 +827,8 @@ if (typeof chrome !== "undefined" && chrome.runtime) {
     }
   });
 }
+
+module.exports = {
+  mergePeriods,
+  calculateTotalDuration,
+};

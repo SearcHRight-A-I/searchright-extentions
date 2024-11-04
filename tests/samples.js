@@ -1,5 +1,5 @@
 // 못해도 10년차가 됨
-export const sample1 = {
+const sample1 = {
   skills: [],
   summary: "",
   website: [],
@@ -66,7 +66,7 @@ export const sample1 = {
 };
 
 // 못해도 10년차가 됨
-export const sample2 = {
+const sample2 = {
   skills: [],
   summary: "",
   website: [],
@@ -146,7 +146,7 @@ export const sample2 = {
 };
 
 // 못해도 10년차가 됨
-export const sample3 = {
+const sample3 = {
   skills: [],
   summary: "",
   website: [],
@@ -208,7 +208,7 @@ export const sample3 = {
 };
 
 // 못해도 10년차가 됨
-export const sample4 = {
+const sample4 = {
   skills: [],
   summary: "",
   website: [],
@@ -310,7 +310,7 @@ export const sample4 = {
 };
 
 // 못해도 10년차가 됨
-export const sample5 = {
+const sample5 = {
   skills: [],
   summary: "",
   website: [],
@@ -385,7 +385,7 @@ export const sample5 = {
 };
 
 // 못해도 13년차가 됨
-export const sample6 = {
+const sample6 = {
   skills: [],
   summary:
     "* As a machine learning engineer, I am developing a machine learning platform in a hybrid environment on AWS and on-premises. I am designing and developing pipelines using Kubernetes and Kubeflow etc.\n* Software engineer about 10 years of experience such as ad-server, video sharing platform, and several web based services.\n* Strong capability of Java programming especially on implementing low-latency service that handles more than daily 100 million requests. Broad knowledge about Linux servers. Experienced various services of top-tier portal in Korea.",
@@ -452,7 +452,7 @@ export const sample6 = {
 };
 
 // 못해도 13년차가 됨
-export const sample7 = {
+const sample7 = {
   skills: ["Deeptech", "Prezi", "Corporate Social Responsibility"],
   summary: "",
   website: [],
@@ -603,7 +603,7 @@ export const sample7 = {
 };
 
 // 못해도 5년차가 됨
-export const sample8 = {
+const sample8 = {
   skills: ["Scrum", "Microsoft Excel", "Amazon Web Services (AWS)"],
   summary: "",
   website: [],
@@ -679,4 +679,15 @@ export const sample8 = {
   ],
   linkedinUrl: "https://www.linkedin.com/in/jacob-campbell-9847371b8",
   totalDuration: { years: 4, months: 11 },
+};
+
+module.exports = {
+  sample1,
+  sample2,
+  sample3,
+  sample4,
+  sample5,
+  sample6,
+  sample7,
+  sample8,
 };

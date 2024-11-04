@@ -1,5 +1,5 @@
-import { mergePeriods, calculateTotalDuration } from "../content.js";
-import {
+const { mergePeriods, calculateTotalDuration } = require("../content.js");
+const {
   sample1,
   sample2,
   sample3,
@@ -8,7 +8,7 @@ import {
   sample6,
   sample7,
   sample8,
-} from "./samples.js";
+} = require("./samples.js");
 
 const testSamples = [
   sample1, // 10
