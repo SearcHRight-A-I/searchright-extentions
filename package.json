@@ -1,0 +1,15 @@
+{
+  "name": "searchright-extensions",
+  "version": "1.5.241007",
+  "main": "content.js",
+  "author": "Nuung <hwjeong@searchright.net>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node ./tests/test_mergePeriods_spec.js",
+    "build": "zip -r searchright-extensions.zip background.js content.js manifest.json popup.html popup.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}

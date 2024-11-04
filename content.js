@@ -175,7 +175,7 @@ const parsingLinkedinLogo = (data) => {
  * @param {Array<Object>} periods - The array of period objects.
  * @returns {Array<Object>} The merged array of period objects.
  */
-function mergePeriods(periods) {
+export function mergePeriods(periods) {
   if (!periods || periods.length === 0) {
     return []; // 빈 배열 처리
   }
@@ -210,18 +210,14 @@ function mergePeriods(periods) {
       period.start.month = 1;
     }
 
-    // current의 end가 없으면 다음 period의 start로 end를 설정
-    if (!current.end) {
-      current.end = {
-        year: period.start.year,
-        month: period.start.month || 1, // 월이 없으면 1월로 설정
-      };
-    }
+    // end가 없으면 현재 날짜로 설정
+    const currentEndDate = current.end
+      ? new Date(
+          current.end.year,
+          current.end.month ? current.end.month - 1 : 11
+        )
+      : new Date(); // 현재 날짜로 설정
 
-    const currentEndDate = new Date(
-      current.end.year,
-      current.end.month ? current.end.month - 1 : 11
-    ); // 끝나는 월이 없으면 12월로 설정
     const periodStartDate = new Date(
       period.start.year,
       period.start.month ? period.start.month - 1 : 0
@@ -233,18 +229,24 @@ function mergePeriods(periods) {
             period.end.year,
             period.end.month ? period.end.month - 1 : 11
           ) // 끝나는 월이 없으면 12월로 설정
-        : null;
+        : new Date(); // 끝나는 날짜가 없으면 현재 날짜로 설정
 
       // 현재 끝나는 날짜보다 더 긴 기간이 있으면 끝나는 날짜 업데이트
-      if (!periodEndDate || currentEndDate < periodEndDate) {
+      if (currentEndDate < periodEndDate) {
         current.end = period.end
           ? { ...period.end }
-          : { year: period.start.year, month: period.start.month || 12 }; // 끝나는 날짜 또는 기본값 적용
+          : {
+              year: new Date().getFullYear(),
+              month: new Date().getMonth() + 1,
+            }; // 현재 날짜를 기본값으로 사용
       }
     } else {
       // end의 month가 없으면 12월로 설정
-      if (!current.end.month) {
-        current.end.month = 12;
+      if (!current.end || !current.end.month) {
+        current.end = {
+          year: current.end ? current.end.year : new Date().getFullYear(),
+          month: current.end ? current.end.month : 12,
+        };
       }
       merged.push(current);
       current = { ...period };
@@ -261,8 +263,6 @@ function mergePeriods(periods) {
       year: new Date().getFullYear(),
       month: new Date().getMonth() + 1,
     };
-  } else if (!current.end.month) {
-    current.end.month = 12; // 마지막 기간의 end month가 없으면 12월로 설정
   }
 
   merged.push(current);
@@ -274,7 +274,7 @@ function mergePeriods(periods) {
  * @param {Array<Object>} periods - The array of period objects.
  * @returns {Object} The total duration in years and months.
  */
-function calculateTotalDuration(periods) {
+export function calculateTotalDuration(periods) {
   let totalMonths = 0;
 
   periods.forEach((period) => {
@@ -805,22 +805,25 @@ function scrapeGoogleUrlData() {
   document.body.removeChild(a);
 }
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "startLinkedinScraping") {
-    logVersion();
-    scrapeLinkedInData(message.count, message.sleep);
-  } else if (message.action === "startLinkedinTargetScraping") {
-    logVersion();
-    scrapeTargetLinkedInData(message.userUrn);
-  } else if (message.action === "startRememberScraping") {
-    logVersion();
-    scrapeRememberData(
-      message.token,
-      message.userAgent,
-      message.totalPageCount
-    );
-  } else if (message.action === "googleUrlScraping") {
-    logVersion();
-    scrapeGoogleUrlData();
-  }
-});
+// 다른 testing 환경에서 호출 가능하게 (import 가능하게)
+if (typeof chrome !== "undefined" && chrome.runtime) {
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "startLinkedinScraping") {
+      logVersion();
+      scrapeLinkedInData(message.count, message.sleep);
+    } else if (message.action === "startLinkedinTargetScraping") {
+      logVersion();
+      scrapeTargetLinkedInData(message.userUrn);
+    } else if (message.action === "startRememberScraping") {
+      logVersion();
+      scrapeRememberData(
+        message.token,
+        message.userAgent,
+        message.totalPageCount
+      );
+    } else if (message.action === "googleUrlScraping") {
+      logVersion();
+      scrapeGoogleUrlData();
+    }
+  });
+}
