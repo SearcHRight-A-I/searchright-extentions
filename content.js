@@ -181,7 +181,7 @@ function mergePeriods(periods) {
   }
 
   // 유효한 기간만 필터링 (start가 있는 기간만)
-  periods = periods.filter((period) => period !== null && period.start);
+  periods = periods.filter((period) => period && period.start);
 
   if (periods.length === 0) {
     return []; // 필터링 후 남은 기간이 없으면 빈 배열 반환
@@ -278,9 +278,12 @@ function calculateTotalDuration(periods) {
   let totalMonths = 0;
 
   periods.forEach((period) => {
-    const startDate = new Date(period.start.year, period.start.month - 1);
+    const startDate = new Date(
+      period.start.year,
+      (period.start.month || 1) - 1
+    );
     const endDate = period.end
-      ? new Date(period.end.year, period.end.month - 1)
+      ? new Date(period.end.year, (period.end.month || 12) - 1)
       : new Date();
     const months =
       (endDate.getFullYear() - startDate.getFullYear()) * 12 +
@@ -828,7 +831,10 @@ if (typeof chrome !== "undefined" && chrome.runtime) {
   });
 }
 
-module.exports = {
-  mergePeriods,
-  calculateTotalDuration,
-};
+// 로컬 테스트 환경에서만 module.exports를 정의
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    mergePeriods,
+    calculateTotalDuration,
+  };
+}

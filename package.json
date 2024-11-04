@@ -5,10 +5,11 @@
   "author": "Nuung <hwjeong@searchright.net>",
   "license": "MIT",
   "scripts": {
-    "test": "node ./tests/test_mergePeriods_spec.js",
+    "test": "jest",
     "build": "zip -r searchright-extensions-deploy.zip background.js content.js manifest.json popup.html popup.js icons"
   },
   "dependencies": {
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "jest": "^29.7.0"
   }
 }
