@@ -1,6 +1,6 @@
 {
   "name": "searchright-extensions",
-  "version": "1.5.241007",
+  "version": "1.5.241104",
   "main": "content.js",
   "author": "Nuung <hwjeong@searchright.net>",
   "license": "MIT",

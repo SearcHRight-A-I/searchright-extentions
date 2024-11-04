@@ -1,4 +1,4 @@
-const VERSION = "1.5.241007";
+const VERSION = "1.5.241104";
 
 function logVersion() {
   console.log(`${VERSION} 버전이 실행되고 있습니다.`);
