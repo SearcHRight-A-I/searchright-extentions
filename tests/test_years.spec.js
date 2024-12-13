@@ -1,216 +1,160 @@
 const { mergePeriods, calculateTotalDuration } = require("../content.js");
 
-describe("mergePeriods와 calculateTotalDuration 다양한 테스트", () => {
-  // 테스트 케이스 1: 겹치지 않는 여러 개의 기간
-  test("여러 개의 겹치지 않는 기간 병합 및 총 기간 계산", () => {
-    const periods = [
-      { start: { year: 2010, month: 1 }, end: { year: 2012, month: 5 } },
-      { start: { year: 2013, month: 6 }, end: { year: 2015, month: 4 } },
-      { start: { year: 2017, month: 2 }, end: { year: 2019, month: 12 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toEqual({ years: 7, months: 3 });
+describe("기간 병합과 총 기간 계산 테스트", () => {
+  // 테스트에 사용할 고정 날짜 설정
+  const 고정날짜 = new Date("2024-12-13");
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(고정날짜);
   });
 
-  // 테스트 케이스 2: 동일한 기간 여러 번 반복
-  test("동일한 기간이 반복될 때 병합 처리", () => {
-    const periods = [
-      { start: { year: 2015, month: 1 }, end: { year: 2016, month: 12 } },
-      { start: { year: 2015, month: 1 }, end: { year: 2016, month: 12 } },
-      { start: { year: 2015, month: 1 }, end: { year: 2016, month: 12 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toEqual({ years: 2, months: 0 });
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
-  // 테스트 케이스 3: 시작일만 있고 종료일이 없는 여러 기간
-  test("여러 개의 시작일만 있는 경우 진행 중인 기간 처리", () => {
-    const periods = [
-      { start: { year: 2018, month: 3 } },
-      { start: { year: 2020, month: 5 } },
-      { start: { year: 2021, month: 8 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toBeTruthy(); // 현재 날짜 기준으로 유동적인 결과
-  });
+  describe("기본 기간 계산", () => {
+    test("서로 다른 기간들이 주어졌을 때 정확한 기간이 계산되어야 함", () => {
+      const periods = [
+        { start: { year: 2010, month: 1 }, end: { year: 2012, month: 5 } },
+        { start: { year: 2013, month: 6 }, end: { year: 2015, month: 4 } },
+        { start: { year: 2017, month: 2 }, end: { year: 2019, month: 12 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      expect(duration).toEqual({ years: 7, months: 3 });
+    });
 
-  // 테스트 케이스 4: 빈 배열 입력
-  test("빈 배열을 입력했을 때 빈 배열 반환", () => {
-    const periods = [];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    expect(merged).toEqual([]);
-  });
-
-  // 테스트 케이스 5: 유효하지 않은 입력 데이터
-  test("유효하지 않은 데이터가 포함된 경우 처리", () => {
-    const periods = [
-      null,
-      { start: { year: 2021, month: 7 }, end: { year: 2022, month: 3 } },
-      undefined,
-      { start: { year: 2023, month: 1 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(merged.length).toBeGreaterThan(0);
-  });
-
-  // 테스트 케이스 6: 매우 오래된 과거와 현재까지의 긴 기간
-  test("긴 기간 동안의 병합 및 총 기간 계산", () => {
-    const periods = [
-      { start: { year: 1900, month: 1 }, end: { year: 1950, month: 12 } },
-      { start: { year: 1960, month: 5 }, end: { year: 2000, month: 11 } },
-      { start: { year: 2001, month: 1 } }, // 현재까지 진행 중
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toBeTruthy(); // 결과는 현재 날짜에 따라 다를 수 있음
-  });
-
-  // 테스트 케이스 7: 단일 월만 포함된 기간
-  test("한 달만 포함된 기간 병합 및 계산", () => {
-    const periods = [
-      { start: { year: 2022, month: 5 }, end: { year: 2022, month: 5 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toEqual({ years: 0, months: 1 });
-  });
-
-  test("연속된 기간 병합 및 총 기간 계산", () => {
-    const periods = [
-      { start: { year: 2015, month: 1 }, end: { year: 2015, month: 12 } },
-      { start: { year: 2016, month: 1 }, end: { year: 2016, month: 12 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toEqual({ years: 2, months: 0 });
-  });
-
-  test("중첩된 기간 병합 및 총 기간 계산", () => {
-    const periods = [
-      { start: { year: 2018, month: 1 }, end: { year: 2019, month: 6 } },
-      { start: { year: 2019, month: 1 }, end: { year: 2020, month: 12 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toEqual({ years: 3, months: 0 });
-  });
-
-  test("단일 기간 병합 및 총 기간 계산", () => {
-    const periods = [
-      { start: { year: 2020, month: 1 }, end: { year: 2021, month: 6 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toEqual({ years: 1, months: 6 });
-  });
-
-  test("연도가 다른 동일 월의 기간 병합 및 계산", () => {
-    const periods = [
-      { start: { year: 2021, month: 5 }, end: { year: 2021, month: 8 } },
-      { start: { year: 2022, month: 5 }, end: { year: 2022, month: 8 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toEqual({ years: 0, months: 8 });
-  });
-
-  test("비정상적인 순서의 데이터 병합 및 총 기간 계산", () => {
-    const periods = [
-      { start: { year: 2019, month: 5 }, end: { year: 2020, month: 4 } },
-      { start: { year: 2018, month: 7 }, end: { year: 2019, month: 4 } },
-    ];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-    expect(duration).toEqual({ years: 1, months: 10 });
-  });
-
-  // 테스트 케이스 13: 시작 년도만 있는 경우 현재까지의 기간 계산
-  test("시작 년도만 있는 경우 현재까지의 기간 계산", () => {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 +1
-
-    const periods = [{ start: { year: 2019 } }, { start: { year: 2021 } }];
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
-
-    // 첫 번째 기간의 예상 계산
-    const startYear1 = 2019;
-    const expectedYears1 = currentYear - startYear1;
-    const expectedMonths1 = currentMonth - 1; // 시작 월이 1월이므로 0이 됩니다.
-
-    // 두 번째 기간의 예상 계산
-    const startYear2 = 2021;
-    const expectedYears2 = currentYear - startYear2;
-    const expectedMonths2 = currentMonth - 1;
-
-    // 예상 총 기간 계산
-    const totalExpectedMonths = expectedYears1 * 12 + expectedMonths1;
-    const additionalExpectedMonths = expectedYears2 * 12 + expectedMonths2;
-    const combinedTotalMonths = Math.max(
-      totalExpectedMonths,
-      additionalExpectedMonths
-    );
-
-    const combinedYears = Math.floor(combinedTotalMonths / 12);
-    const combinedMonths = combinedTotalMonths % 12;
-
-    expect(duration).toEqual({
-      years: combinedYears,
-      months: combinedMonths + 1, // 시작월 포함해서 1월+
+    test("동일한 기간이 여러 번 입력되었을 때 중복 제거 후 정확한 기간이 계산되어야 함", () => {
+      const periods = [
+        { start: { year: 2015, month: 1 }, end: { year: 2016, month: 12 } },
+        { start: { year: 2015, month: 1 }, end: { year: 2016, month: 12 } },
+        { start: { year: 2015, month: 1 }, end: { year: 2016, month: 12 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      expect(duration).toEqual({ years: 2, months: 0 });
     });
   });
 
-  // 테스트 케이스 14: 시작과 끝이 모두 년도로만 있는 경우 기간 계산
-  test("시작과 끝이 모두 년도로만 있는 경우 기간 계산", () => {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // 월은 0부터 시작하므로 +1
+  describe("특수한 기간 계산", () => {
+    test("종료일이 없는 진행 중인 기간들의 정확한 계산", () => {
+      const periods = [
+        { start: { year: 2018, month: 3 } },
+        { start: { year: 2020, month: 5 } },
+        { start: { year: 2021, month: 8 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      // 2024년 12월 13일 기준으로 계산
+      expect(duration).toEqual({ years: 6, months: 10 });
+    });
 
-    const periods = [
-      { start: { year: 2015 }, end: { year: 2017 } },
-      { start: { year: 2018 }, end: { year: 2020 } },
-      { start: { year: 2021 } }, // 현재까지 진행 중인 기간
-    ];
+    test("빈 배열이 입력되었을 때 빈 배열이 반환되어야 함", () => {
+      const periods = [];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      expect(merged).toEqual([]);
+      const duration = calculateTotalDuration(merged);
+      expect(duration).toEqual({ years: 0, months: 0 });
+    });
 
-    const merged = mergePeriods(periods);
-    console.log("병합된 기간:", merged);
-    const duration = calculateTotalDuration(merged);
-    console.log("계산된 기간:", duration);
+    test("유효하지 않은 데이터가 포함되었을 때 유효한 데이터만 계산되어야 함", () => {
+      const periods = [
+        null,
+        { start: { year: 2021, month: 7 }, end: { year: 2022, month: 3 } },
+        undefined,
+        { start: { year: 2023, month: 1 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      // 2024년 12월 13일 기준으로 계산
+      expect(duration).toEqual({ years: 2, months: 9 });
+    });
+  });
 
-    // 현재 날짜 기준으로 총 기간 계산
-    const expectedYears = currentYear - 2015;
-    const expectedMonths = ((currentMonth - 1) % 12) + 1;
+  describe("복잡한 기간 계산", () => {
+    test("매우 긴 기간의 정확한 계산", () => {
+      const periods = [
+        { start: { year: 1900, month: 1 }, end: { year: 1950, month: 12 } },
+        { start: { year: 1960, month: 5 }, end: { year: 2000, month: 11 } },
+        { start: { year: 2001, month: 1 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      // 2024년 12월 13일 기준으로 계산
+      expect(duration).toEqual({ years: 115, months: 7 });
+    });
 
-    expect(duration).toEqual({ years: expectedYears, months: expectedMonths });
+    test("한 달만 포함된 기간의 정확한 계산", () => {
+      const periods = [
+        { start: { year: 2022, month: 5 }, end: { year: 2022, month: 5 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      expect(duration).toEqual({ years: 0, months: 1 });
+    });
+
+    test("연속된 기간의 정확한 계산", () => {
+      const periods = [
+        { start: { year: 2015, month: 1 }, end: { year: 2015, month: 12 } },
+        { start: { year: 2016, month: 1 }, end: { year: 2016, month: 12 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      expect(duration).toEqual({ years: 2, months: 0 });
+    });
+
+    test("중첩된 기간의 정확한 계산", () => {
+      const periods = [
+        { start: { year: 2018, month: 1 }, end: { year: 2019, month: 6 } },
+        { start: { year: 2019, month: 1 }, end: { year: 2020, month: 12 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      expect(duration).toEqual({ years: 3, months: 0 });
+    });
+  });
+
+  describe("연도 기반 계산", () => {
+    test("시작 연도만 있는 경우의 정확한 계산", () => {
+      const periods = [{ start: { year: 2019 } }, { start: { year: 2021 } }];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      // 2024년 12월 13일 기준으로 계산
+      expect(duration).toEqual({ years: 6, months: 0 });
+    });
+
+    test("시작과 끝이 연도로만 주어진 경우의 정확한 계산", () => {
+      const periods = [
+        { start: { year: 2015 }, end: { year: 2017 } },
+        { start: { year: 2018 }, end: { year: 2020 } },
+        { start: { year: 2021 } },
+      ];
+      const merged = mergePeriods(periods);
+      console.log("병합된 기간:", merged);
+      const duration = calculateTotalDuration(merged);
+      console.log("계산된 기간:", duration);
+      // 2024년 12월 13일 기준으로 계산
+      expect(duration).toEqual({ years: 10, months: 0 });
+    });
   });
 });

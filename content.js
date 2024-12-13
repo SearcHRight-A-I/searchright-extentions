@@ -609,6 +609,7 @@ function scrapeTargetLinkedInData(userUrn) {
   async function scrapePage() {
     const result = await fetchProfile(userUrn, csrfToken);
     const userInfo = await linkedinFormattedData(result);
+    userInfo["profileId"] = userUrn;
     users.push(userInfo);
 
     // json 형태 포메팅하기
@@ -659,6 +660,7 @@ function scrapeLinkedInData(scrapingPageCount, sleepCount) {
           console.log(`${cnt} 번째 페이지, ${i} 번째 데이터 수집 완료`);
           // 데이터 파싱 필요
           const userInfo = await linkedinFormattedData(result);
+          userInfo["profileId"] = profileUrn;
           users.push(userInfo);
         } catch (error) {
           console.error("fetchProfile Error occurred:", error);
@@ -723,6 +725,7 @@ async function scrapeRememberData(token, ua, scrapingCount) {
       const data = await fetchRememberApi(token, ua, profileId);
       if (data) {
         const userInfo = rememberFormattedData(profileId, data);
+        userInfo["profileId"] = profileId;
         users.push(userInfo);
       }
     } catch (error) {
